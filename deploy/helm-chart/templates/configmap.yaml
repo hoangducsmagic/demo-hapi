@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+data:
+  NODE_ENV: "dev"
+  API_KEY: "mVVYirkJPIqJHhBSQG7VTtQt8dkd47l1ki9Pb80Qc7ApPflTvAa1BTepWmlULosD"
+  MONGO_URI: "mongodb://dpyco:pDzRU30wk5si@34.87.41.232/delivery"
+  REDIS_URI: "redis://:c9POCjDBZs0E@35.240.162.168:6379/0"

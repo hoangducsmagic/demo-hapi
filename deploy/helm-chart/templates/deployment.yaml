@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "mbe-customer.fullname" . }}
+  labels:
+    app: {{ .Chart.Name }}
+    {{- toYaml .Values.labels | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "mbe-customer.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}
+        {{- toYaml .Values.labels | nindent 8 }}
+        {{- include "mbe-customer.selectorLabels" . | nindent 8 }}
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      serviceAccountName: {{ include "mbe-customer.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          resources:
+            requests:
+              cpu: 300m
+              memory: 2Gi
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          env: 
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  key: NODE_ENV
+                  name: {{ .Release.Name }}-config
+            - name: API_KEY
+              valueFrom:
+                configMapKeyRef:
+                  key: API_KEY
+                  name: {{ .Release.Name }}-config
+            - name: MONGO_URI
+              valueFrom:
+                configMapKeyRef:
+                  key: MONGO_URI
+                  name: {{ .Release.Name }}-config
+            - name: REDIS_URI
+              valueFrom:
+                configMapKeyRef:
+                  key: REDIS_URI
+                  name: {{ .Release.Name }}-config
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
